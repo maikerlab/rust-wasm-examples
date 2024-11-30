@@ -1,0 +1,17 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../common" }
+actix-web = "4"
+sqlx = { version = "0.8", features = [
+    "runtime-tokio",
+    "tls-native-tls",
+    "sqlite",
+    "rust_decimal",
+    "chrono",
+] }
+anyhow = "1.0.93"
+derive_more = { version = "1.0.0", features = ["full"] }
