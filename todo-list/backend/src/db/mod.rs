@@ -1,7 +1,8 @@
+use anyhow::anyhow;
 use common::{AddTodoItem, TodoItem, UpdateTodoItem};
 use sqlx::{Error, SqlitePool};
 
-pub struct TodoItemDAO {
+struct TodoItemDAO {
     pub id: i64,
     pub name: String,
     pub description: Option<String>,
@@ -95,4 +96,32 @@ pub async fn update_todo(
 
     let updated = find_todo_by_id(conn, id).await?;
     Ok(updated)
+}
+
+pub async fn delete_todo(conn: &SqlitePool, id: i64) -> anyhow::Result<()> {
+    if !todo_exists(conn, id).await? {
+        // TODO: create meaningful error type
+        return Err(anyhow!("not found"));
+    }
+    sqlx::query!(
+        r#"
+        DELETE FROM todos 
+        WHERE id = ?1
+        "#,
+        id,
+    )
+    .execute(conn)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn todo_exists(conn: &SqlitePool, id: i64) -> anyhow::Result<bool> {
+    let exists: bool =
+        sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM todos WHERE id = $1)")
+            .bind(id)
+            .fetch_one(conn)
+            .await?;
+
+    Ok(exists)
 }

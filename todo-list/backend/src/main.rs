@@ -2,7 +2,7 @@ mod db;
 
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
-use actix_web::{get, post, put, web, App, HttpResponse, HttpServer, ResponseError};
+use actix_web::{delete, get, post, put, web, App, HttpResponse, HttpServer, ResponseError};
 use common::{AddTodoItem, UpdateTodoItem};
 use derive_more::derive::{Add, From};
 use derive_more::{Display, Error};
@@ -11,7 +11,7 @@ use std::env;
 use std::sync::Arc;
 
 #[derive(Debug, PartialEq, From, Add, Display, Error)]
-enum ApiError {
+pub enum ApiError {
     #[display("Database Error")]
     DatabaseError,
     #[display("Entity not found")]
@@ -34,7 +34,7 @@ impl ResponseError for ApiError {
     }
 }
 
-#[get("/")]
+#[get("/api/v1/todo")]
 async fn get_todos(data: web::Data<AppState>) -> ApiResult {
     let db = &data.db_handle;
     let todos = db::list_todos(db)
@@ -43,7 +43,7 @@ async fn get_todos(data: web::Data<AppState>) -> ApiResult {
     Ok(HttpResponse::Ok().json(&todos))
 }
 
-#[get("/{id}")]
+#[get("/api/v1/todo/{id}")]
 async fn get_todo_by_id(data: web::Data<AppState>, path: web::Path<i64>) -> ApiResult {
     let id = path.into_inner();
     let db = &data.db_handle;
@@ -53,7 +53,7 @@ async fn get_todo_by_id(data: web::Data<AppState>, path: web::Path<i64>) -> ApiR
     Ok(HttpResponse::Ok().json(&todo))
 }
 
-#[post("/")]
+#[post("/api/v1/todo")]
 async fn add_todo(data: web::Data<AppState>, todo: web::Json<AddTodoItem>) -> ApiResult {
     let db = &data.db_handle;
     let todo = todo.into_inner();
@@ -63,7 +63,7 @@ async fn add_todo(data: web::Data<AppState>, todo: web::Json<AddTodoItem>) -> Ap
     Ok(HttpResponse::Ok().json(&created))
 }
 
-#[put("/{id}")]
+#[put("/api/v1/todo/{id}")]
 async fn update_todo(
     data: web::Data<AppState>,
     path: web::Path<i64>,
@@ -77,6 +77,17 @@ async fn update_todo(
         .map_err(|_| ApiError::DatabaseError)?;
     Ok(HttpResponse::Ok().json(&updated))
 }
+
+#[delete("/api/v1/todo/{id}")]
+async fn delete_todo(data: web::Data<AppState>, path: web::Path<i64>) -> ApiResult {
+    let id = path.into_inner();
+    let db = &data.db_handle;
+    db::delete_todo(&db, id)
+        .await
+        .map_err(|_| ApiError::EntityNotFoundError)?;
+    Ok(HttpResponse::Ok().finish())
+}
+
 struct AppState {
     db_handle: Arc<Pool<Sqlite>>,
 }
@@ -95,8 +106,9 @@ async fn main() -> anyhow::Result<()> {
             .service(get_todo_by_id)
             .service(add_todo)
             .service(update_todo)
+            .service(delete_todo)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 8000))?
     .run()
     .await?;
     Ok(())
