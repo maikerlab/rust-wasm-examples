@@ -1,4 +1,15 @@
+# Build
 **/target/
+
+# IDE
+**/.vscode/
+**/.idea/
+
+# Database
 *.db
+*.db-shm
+*.db-wal
+
+# Environment
 *.env
 *.envrc

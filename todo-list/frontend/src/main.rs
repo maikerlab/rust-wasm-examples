@@ -1,5 +1,7 @@
-use common::TodoItem;
-use gloo_net::http::Request;
+mod components;
+mod pages;
+use pages::HomePage;
+
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -35,56 +37,4 @@ fn App() -> Html {
 
 fn main() {
     yew::Renderer::<App>::new().render();
-}
-
-#[function_component]
-fn HomePage() -> Html {
-    let todos = use_state(|| vec![]);
-    {
-        let todos = todos.clone();
-        use_effect_with((), move |_| {
-            let todos = todos.clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                let fetched_todos: Vec<TodoItem> = Request::get("/api/v1/todo")
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
-                todos.set(fetched_todos);
-            });
-            || ()
-        });
-    }
-    html! {
-    <>
-        <b>{"All TODO's:"}</b>
-        <TodoList todos={(*todos).clone()} />
-    </>
-    }
-}
-
-#[derive(Properties, PartialEq)]
-struct TodoListProps {
-    todos: Vec<TodoItem>,
-}
-
-#[function_component]
-fn TodoList(props: &TodoListProps) -> Html {
-    html! {
-    <>
-        <ul>
-            {props
-                .todos
-                .iter()
-                .map(|todo| {
-                    html! {
-                        <li key={todo.id} style="color: blue;">{format!("{} - {}", todo.name, todo.done)}</li>
-                    }
-                })
-                .collect::<Html>()}
-        </ul>
-    </>
-    }
 }
