@@ -1,7 +1,6 @@
-use common::TodoItem;
-use gloo_net::http::Request;
 use yew::prelude::*;
 
+use crate::api::fetch_todos;
 use crate::components::TodoList;
 
 #[function_component]
@@ -12,13 +11,7 @@ pub fn HomePage() -> Html {
         use_effect_with((), move |_| {
             let todos = todos.clone();
             wasm_bindgen_futures::spawn_local(async move {
-                let fetched_todos: Vec<TodoItem> = Request::get("/api/v1/todo")
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
+                let fetched_todos = fetch_todos().await.unwrap_or(vec![]);
                 todos.set(fetched_todos);
             });
             || ()

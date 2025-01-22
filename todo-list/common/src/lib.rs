@@ -14,7 +14,7 @@ pub struct AddTodoItem {
     pub description: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateTodoItem {
     pub name: String,
     pub description: Option<String>,

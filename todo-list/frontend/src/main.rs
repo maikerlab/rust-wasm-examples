@@ -1,3 +1,4 @@
+mod api;
 mod components;
 mod pages;
 use pages::HomePage;

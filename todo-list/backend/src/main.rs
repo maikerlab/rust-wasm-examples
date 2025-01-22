@@ -2,10 +2,12 @@ mod db;
 
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
+use actix_web::middleware::Logger;
 use actix_web::{delete, get, post, put, web, App, HttpResponse, HttpServer, ResponseError};
 use common::{AddTodoItem, UpdateTodoItem};
 use derive_more::derive::{Add, From};
 use derive_more::{Display, Error};
+use log::info;
 use sqlx::{Pool, Sqlite, SqlitePool};
 use std::env;
 use std::sync::Arc;
@@ -94,6 +96,9 @@ struct AppState {
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    info!("Starting TODO List Backend at port 8000");
+
     let db_url = env::var("DATABASE_URL")?;
     let db_pool = SqlitePool::connect(&db_url).await?;
     let app_state = web::Data::new(AppState {
@@ -107,6 +112,7 @@ async fn main() -> anyhow::Result<()> {
             .service(add_todo)
             .service(update_todo)
             .service(delete_todo)
+            .wrap(Logger::new("%r %a %{User-Agent}i"))
     })
     .bind(("127.0.0.1", 8000))?
     .run()
