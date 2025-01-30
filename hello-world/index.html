@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    <p id="hello-msg">-</p>
+    <script type="module">
+      import init, { add, greet } from "./pkg/hello_world.js";
+
+      async function run() {
+        await init();
+
+        const result = add(1, 2);
+        console.log(`1 + 2 = ${result}`);
+        if (result !== 3) throw new Error("wasm addition doesn't work!");
+
+        greet("Maik");
+      }
+      run();
+    </script>
+  </body>
+</html>
