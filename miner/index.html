@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <title>Miner</title>
+</head>
+<body>
+<p id="status">-</p>
+<script type="module">
+  import init, { Miner } from "./pkg/miner.js";
+
+  async function run() {
+    await init();
+    const miner = new Miner("test_block", 5);
+
+    document.getElementById("status").textContent = "Mining...";
+
+    setTimeout(() => {
+      const startAt = performance.now();
+      const result = miner.mine();
+      const endAt = performance.now();
+      const duration = (endAt-startAt).toFixed(2);
+      document.getElementById("status").textContent = `Found: ${result} in ${duration} ms`;
+    }, 10);
+  }
+  run();
+</script>
+</body>
+</html>
