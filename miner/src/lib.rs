@@ -2,6 +2,8 @@ use rand::RngCore;
 use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
 use console_error_panic_hook;
+use serde::{Deserialize, Serialize};
+use wasm_bindgen_futures::future_to_promise;
 pub use wasm_bindgen_rayon::init_thread_pool;
 
 #[wasm_bindgen(start)]
@@ -16,17 +18,18 @@ pub struct Miner {
 }
 
 #[wasm_bindgen]
+#[derive(Serialize, Deserialize)]
 pub struct MiningResult {
-    nonce: u64,
+    nonce: String,
     hash: String,
-    iterations: u64
+    iterations: String
 }
 
 #[wasm_bindgen]
 impl MiningResult {
     #[wasm_bindgen(getter)]
-    pub fn nonce(&self) -> u64 {
-        self.nonce
+    pub fn nonce(&self) -> String {
+        self.nonce.clone()
     }
 
     #[wasm_bindgen(getter)]
@@ -35,8 +38,8 @@ impl MiningResult {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn iterations(&self) -> u64 {
-        self.iterations
+    pub fn iterations(&self) -> String {
+        self.iterations.clone()
     }
 }
 
@@ -57,10 +60,40 @@ impl Miner {
             if hash.starts_with(&"0".repeat(self.difficulty)) {
                 println!("Nonce: {}, Hash: {}", nonce, hash);
                 return MiningResult {
-                    nonce,
+                    nonce: nonce.to_string(),
                     hash,
-                    iterations,
+                    iterations: iterations.to_string(),
                 }
+            }
+            nonce += 1;
+            iterations += 1;
+        }
+    }
+
+    #[wasm_bindgen]
+    pub async fn mine_async(&self) -> Result<JsValue, JsValue> {
+        // TODO: this works, but we want to break the mining algorithm into async chunks
+        // maybe with: wasm_bindgen_futures::future_to_promise
+/*        task::sleep(Duration::from_secs(1)).await;
+        return Ok(serde_wasm_bindgen::to_value(&MiningResult {
+            nonce: "123".to_string(),
+            hash: "000abcdef".to_string(),
+            iterations: "456".to_string(),
+        })?);*/
+
+        let mut nonce = rand::rng().next_u64();
+        let mut iterations = 1;
+        loop {
+            let input = format!("{}{}", self.prefix, nonce);
+            let hash = sha256(&input);
+            if hash.starts_with(&"0".repeat(self.difficulty)) {
+                println!("Nonce: {}, Hash: {}", nonce, hash);
+                let result = MiningResult {
+                    nonce: nonce.to_string(),
+                    hash,
+                    iterations: iterations.to_string(),
+                };
+                return Ok(serde_wasm_bindgen::to_value(&result)?);
             }
             nonce += 1;
             iterations += 1;
