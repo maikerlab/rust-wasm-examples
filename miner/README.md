@@ -3,13 +3,12 @@
 Build the WASM module:
 
 ```shell
-wasm-pack build --target web --release
+wasm-pack build --target web --release --out-dir app/public/pkg
 ```
 
-Serve:
+Run Preact App:
 
 ```shell
-miniserve --header "Cross-Origin-Opener-Policy: same-origin" \
-          --header "Cross-Origin-Embedder-Policy: require-corp" \
-          --index "index.html" --port 8080 .
+cd app
+npm run dev
 ```
