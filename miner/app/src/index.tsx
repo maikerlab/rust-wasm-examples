@@ -22,15 +22,17 @@ const App = () => {
     const miner = new Miner(data, difficulty);
     setMining(true);
     const start = performance.now();
-    await miner
-      .mine_async()
-      .then((result) => {
-        setResult(result);
-        setStatus("Async mining Complete!");
-        setDuration(performance.now() - start);
-      })
-      .catch((err) => setStatus("Something bad happened:" + err))
-      .finally(() => setMining(false));
+    try {
+      console.log("start mining...");
+      const result = (await miner.mine_async()) as MiningResult;
+      //const result = miner.mine();
+      setResult(result);
+      setStatus("Mining complete!");
+      setDuration(performance.now() - start);
+    } catch (err) {
+      setStatus("Something bad happened:" + err);
+    }
+    setMining(false);
   };
 
   return (
