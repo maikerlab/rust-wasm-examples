@@ -17,9 +17,7 @@ rayon = "1.8"
 wasm-bindgen-rayon = { version = "1.2", features = ["no-bundler"] }
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
-async-std = "1.10"
 gloo-timers = { version = "0.3.0", features = ["futures"]}
-wasm_thread = "0.3.3"
 
 [dependencies.web-sys]
 version = "0.3.4"
