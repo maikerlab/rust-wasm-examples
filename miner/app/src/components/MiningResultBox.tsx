@@ -1,11 +1,13 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { MiningResult, MiningState } from "../types";
+import { motion } from "framer-motion";
 
 export interface MiningResultBoxProps {
   title: string;
   state: MiningState;
   result?: MiningResult;
 }
+
 export default function MiningResultBox({
   title,
   state,
@@ -38,7 +40,19 @@ export default function MiningResultBox({
           </div>
         </div>
       ) : state == MiningState.MINING ? (
-        <div class="flex flex-grow flex-col justify-center text-5xl">⏳</div>
+        <motion.div
+          class="flex flex-grow flex-col justify-center text-5xl"
+          initial={{ rotate: 0 }}
+          animate={{ rotate: [-45, 0] }}
+          transition={{
+            duration: 0.5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatType: "mirror",
+          }}
+        >
+          ⛏️
+        </motion.div>
       ) : (
         <div class="flex flex-grow flex-col justify-center text-5xl">❔</div>
       )}

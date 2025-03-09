@@ -9,7 +9,10 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.0.4",
+		"motion": "^12.4.10",
 		"preact": "^10.25.3",
+		"react-icons": "^5.5.0",
+		"recharts": "^2.15.1",
 		"tailwindcss": "^4.0.4",
 		"wasm-miner": "file:./public/pkg/"
 	},

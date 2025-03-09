@@ -1,10 +1,11 @@
-import "./style.css";
-
-import { useState, useMemo } from "preact/hooks";
+import { useState, useMemo, useRef } from "preact/hooks";
 import { render } from "preact";
 import { useEffect } from "react";
 import { MiningInput, MiningResult, MiningState } from "./types";
 import MiningResultBox from "./components/MiningResultBox";
+import MiningResultChart, {
+  MiningChartData,
+} from "./components/MiningResultChart";
 
 const App = () => {
   const [wasmState, setWasmState] = useState<MiningState>(MiningState.IDLE);
@@ -20,6 +21,30 @@ const App = () => {
   const [difficulty, setDifficulty] = useState<number>(4);
   const [wasmResult, setWasmResult] = useState<MiningResult>();
   const [jsResult, setJsResult] = useState<MiningResult>();
+  const [chartData, setChartData] = useState<MiningChartData[]>([]);
+
+  const calcIterationsPerSecond = (iterations: number, durationMs: number) => {
+    return Math.floor(Number(iterations) / (durationMs / 1000));
+  };
+
+  useEffect(() => {
+    if (jsState == MiningState.SUCCESS || wasmState == MiningState.SUCCESS) {
+      const newChartData: MiningChartData = {
+        idx: chartData.length + 1,
+        label: "WASM",
+        wasm: calcIterationsPerSecond(
+          Number(wasmResult.iterations),
+          wasmResult.durationMs
+        ),
+        js: calcIterationsPerSecond(
+          Number(jsResult.iterations),
+          jsResult.durationMs
+        ),
+      };
+      setChartData([...chartData, newChartData].slice(-10));
+    }
+  }, [isMining]);
+
   const miner: Worker = useMemo(
     () =>
       new Worker(new URL("./worker/wasm_worker.ts", import.meta.url), {
@@ -95,7 +120,7 @@ const App = () => {
         </div>
 
         <button
-          class={`w-full mt-6 py-2 text-lg font-bold text-white rounded-lg transition-all ${
+          class={`w-full mt-6 py-2 text-lg text-center font-bold text-white rounded-lg transition-all ${
             isMining
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-blue-500 hover:bg-blue-700"
@@ -116,6 +141,9 @@ const App = () => {
             result={jsResult}
             title="JavaScript"
           />
+        </div>
+        <div class="my-4 flex justify-center items-center w-full">
+          <MiningResultChart data={chartData} />
         </div>
       </div>
     </div>
