@@ -3,6 +3,12 @@ export type MiningInput = {
   data: string;
 };
 
+export enum MiningState {
+  IDLE,
+  MINING,
+  SUCCESS,
+}
+
 export type MiningResult = {
   nonce: string;
   hash: string;

@@ -3,33 +3,15 @@ import "./style.css";
 import { useState, useMemo } from "preact/hooks";
 import { render } from "preact";
 import { useEffect } from "react";
-import { MiningInput, MiningResult } from "./types";
-
-interface MiningResultBoxProps {
-  title: string;
-  result: MiningResult;
-}
-function MiningResultBox({ title, result }: MiningResultBoxProps) {
-  return (
-    <div class="mt-4 p-3 bg-gray-700 rounded-lg">
-      <p class="text-gray-300">
-        {`${title}: ${
-          result.iterations
-        } iterations in ${result.durationMs.toFixed(1)} ms`}
-      </p>
-      <div class="text-gray-400 font-mono break-all bg-gray-800 p-2 rounded-lg mt-2">
-        {result.hash}
-      </div>
-    </div>
-  );
-}
+import { MiningInput, MiningResult, MiningState } from "./types";
+import MiningResultBox from "./components/MiningResultBox";
 
 const App = () => {
-  const [isWasmMining, setWasmMining] = useState<boolean>(false);
-  const [isJsMining, setJsMining] = useState<boolean>(false);
+  const [wasmState, setWasmState] = useState<MiningState>(MiningState.IDLE);
+  const [jsState, setJsState] = useState<MiningState>(MiningState.IDLE);
   const isMining = useMemo(() => {
-    return isJsMining || isWasmMining;
-  }, [isJsMining, isWasmMining]);
+    return jsState == MiningState.MINING || wasmState == MiningState.MINING;
+  }, [jsState, wasmState]);
   const statusText = useMemo(() => {
     return isMining ? "⏳ Mining..." : "⛏️ Start Mining";
   }, [isMining]);
@@ -58,13 +40,13 @@ const App = () => {
       miner.onmessage = (e: MessageEvent<string>) => {
         const result = JSON.parse(e.data) as MiningResult;
         setWasmResult(result);
-        setWasmMining(false);
+        setWasmState(MiningState.SUCCESS);
       };
 
       jsMiner.onmessage = (e: MessageEvent<string>) => {
         const result = JSON.parse(e.data) as MiningResult;
         setJsResult(result);
-        setJsMining(false);
+        setJsState(MiningState.SUCCESS);
       };
     }
   }, [miner, jsMiner]);
@@ -72,15 +54,15 @@ const App = () => {
   const startMining = async () => {
     setWasmResult(null);
     setJsResult(null);
-    setWasmMining(true);
-    setJsMining(true);
+    setWasmState(MiningState.MINING);
+    setJsState(MiningState.MINING);
     miner.postMessage(JSON.stringify({ data, difficulty } as MiningInput));
     jsMiner.postMessage(JSON.stringify({ data, difficulty } as MiningInput));
   };
 
   return (
     <div class="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <div class="bg-gray-800 shadow-lg rounded-2xl p-6 w-full max-w-md">
+      <div class="bg-gray-800 shadow-lg rounded-2xl p-6 w-full max-w-3xl">
         <h1 class="text-2xl font-bold text-center text-blue-400">🚀 ₿ Miner</h1>
 
         <div class="mt-4">
@@ -90,6 +72,7 @@ const App = () => {
             class="w-full mt-1 p-2 bg-gray-700 rounded-lg text-white border border-gray-600 focus:ring-2 focus:ring-blue-500"
             value={data}
             onChange={(e) => setData(e.currentTarget.value)}
+            disabled={isMining}
           />
         </div>
 
@@ -106,6 +89,7 @@ const App = () => {
               max="10"
               value={difficulty}
               onChange={(e) => setDifficulty(Number(e.currentTarget.value))}
+              disabled={isMining}
             />
           </div>
         </div>
@@ -121,8 +105,18 @@ const App = () => {
         >
           {statusText}
         </button>
-        {wasmResult && <MiningResultBox result={wasmResult} title="WASM" />}
-        {jsResult && <MiningResultBox result={jsResult} title="JS" />}
+        <div class="flex flex-row gap-x-2">
+          <MiningResultBox
+            state={wasmState}
+            result={wasmResult}
+            title="WebAssembly"
+          />
+          <MiningResultBox
+            state={jsState}
+            result={jsResult}
+            title="JavaScript"
+          />
+        </div>
       </div>
     </div>
   );
