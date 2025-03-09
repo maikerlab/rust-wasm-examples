@@ -26,7 +26,7 @@ export default function MiningResultChart({ data }: MiningChartProps) {
         <Line type="monotone" dataKey="wasm" stroke="#8884d8" />
         <Line type="monotone" dataKey="js" stroke="#82ca9d" />
         <CartesianGrid stroke="#ccc" strokeDasharray="3 3" />
-        <XAxis dataKey="idx" />
+        <XAxis dataKey="idx" axisLine={false} tick={false} />
         <YAxis />
         <Tooltip />
       </LineChart>

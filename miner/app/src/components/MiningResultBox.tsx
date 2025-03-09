@@ -18,20 +18,20 @@ export default function MiningResultBox({
       result &&
       (Number(result.iterations) / (result.durationMs / 1000)).toLocaleString(
         "en-US",
-        { maximumFractionDigits: 0 }
+        { maximumFractionDigits: 0 },
       )
     );
   }, [result]);
 
   return (
-    <div class="mt-4 p-3 bg-gray-700 rounded-lg w-full min-h-48 text-center flex flex-col">
+    <div class="p-3 bg-gray-700 rounded-lg w-full min-h-48 text-center flex flex-col">
       <h2 class="text-2xl flex-none">{title}</h2>
       {state == MiningState.SUCCESS && result ? (
         <div class="flex flex-grow flex-col justify-center text-left">
           <p class="text-gray-300 mt-2">{`Found with nonce: ${result.nonce}`}</p>
           <p class="text-gray-300">
             {`${result.iterations} iterations in ${result.durationMs.toFixed(
-              1
+              1,
             )} ms`}
           </p>
           <p class="text-gray-300">{`~ ${iterationsPerSecond} iterations per second`}</p>
