@@ -18,9 +18,8 @@ pub fn HomePage() -> Html {
         });
     }
     html! {
-    <>
-        <b>{"All TODO's:"}</b>
+    <div class="w-screen h-screen p-4">
         <TodoList todos={(*todos).clone()} />
-    </>
+    </div>
     }
 }

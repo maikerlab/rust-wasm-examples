@@ -1,5 +1,5 @@
 use crate::api::update_todo;
-use common::{TodoItem, UpdateTodoItem};
+use common::TodoItem;
 use web_sys::{console, HtmlInputElement};
 use yew::{function_component, html, Callback, Event, Html, Properties, TargetCast};
 
@@ -11,9 +11,9 @@ pub struct TodoListProps {
 #[function_component]
 pub fn TodoList(props: &TodoListProps) -> Html {
     html! {
-    <>
-        <div class="todo-list">
-            {props
+        <div class="max-w-md mx-auto bg-slate-50 text-black border border-slate-500 p-4 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold mb-2">{"Todo List"}</h2>
+            <ul>{props
                 .todos
                 .iter()
                 .map(|todo| {
@@ -35,14 +35,21 @@ pub fn TodoList(props: &TodoListProps) -> Html {
                         }
                     });
                     html! {
-                    <div class="todo-item">
-                        <input id={this_todo.id.to_string()} type="checkbox" name={this_todo.name.clone()} checked={this_todo.done} onchange={onclick} />
-                        <label for={this_todo.id.to_string()}>{&this_todo.name}</label>
-                    </div>
+                    <li class="flex items-center gap-3 p-2 border-b">
+                        <input type="checkbox"
+                            class="w-5 h-5 rounded border-gray-300"
+                            id={this_todo.id.to_string()}
+                            name={this_todo.name.clone()}
+                            checked={this_todo.done}
+                            onchange={onclick} />
+                        <span class={format!("text-lg {}", if this_todo.done { "line-through text-gray-400" } else { "" })}>
+                            {&this_todo.name}
+                        </span>
+                    </li>
                     }
                 })
                 .collect::<Html>()}
+            </ul>
         </div>
-    </>
     }
 }
